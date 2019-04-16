@@ -24,7 +24,7 @@ function buildHandler(config) {
 }
 
 function findPropConfig(propName, config) {
-    return config.props.find(m=>m.name === propName);
+    return config.props.find(m=>m.name.match(propName));
 }
 
 function log(object, config) {
@@ -45,6 +45,4 @@ function log(object, config) {
     return object;
 }
 
-module.exports = {
-    logify
-};
+module.exports = log;
