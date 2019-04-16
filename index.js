@@ -3,17 +3,17 @@
 const DEFAULT_LOG_FN = console.log;
 
 /*
-{
-    props: [{name: 'kek', logger: console.log}],
+let proxyLoggerConfig = {
+    props: [{name: "send", logger: tgBotLogger.info.bind(tgBotLogger), handlers: {apply: {}}}],
     includeProto: true
-}
+};
 */
 
 function buildHandler(config) {
     let handler = {};
     let logger = config.logger || DEFAULT_LOG_FN;
 
-    if (config.apply) {
+    if (config.handlers.apply) {
         handler.apply = (target, thisArg, argArray)=> {
             logger(target, JSON.stringify(argArray));
             return target.apply(thisArg, argArray);
@@ -24,7 +24,9 @@ function buildHandler(config) {
 }
 
 function findPropConfig(propName, config) {
-    return config.props.find(m=>m.name.match(propName));
+    return config.props.find(prop=>{
+        return propName.match(new RegExp(prop.name))
+    });
 }
 
 function log(object, config) {
@@ -38,7 +40,7 @@ function log(object, config) {
         let propName = props[i];
         let propConfig = findPropConfig(props[i], config);
         if (!propConfig) continue;
-
+        console.log(propName);
         object[propName] = new Proxy(object[propName], buildHandler(propConfig));
     }
 
