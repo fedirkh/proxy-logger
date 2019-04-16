@@ -1,35 +1,28 @@
 'use strict';
 
 const DEFAULT_LOG_FN = console.log;
-
-/*
-let proxyLoggerConfig = {
-    props: [{name: "send", logger: tgBotLogger.info.bind(tgBotLogger), handlers: {apply: {}}}],
-    includeProto: true
+const DEFAULT_CONFIG = {
+    props: [{
+        namePattern: ".*",
+        logger: (target, thisArg, argumentsList) => {DEFAULT_LOG_FN(target, argumentsList) }
+    }]
 };
-*/
 
 function buildHandler(config) {
-    let handler = {};
     let logger = config.logger || DEFAULT_LOG_FN;
-
-    if (config.handlers.apply) {
-        handler.apply = (target, thisArg, argArray)=> {
-            logger(target, JSON.stringify(argArray));
-            return target.apply(thisArg, argArray);
+    return {
+        apply: (target, ...args)=> {
+            logger(target, ...args);
+            return target.apply(...args);
         }
-    }
-
-    return handler;
+    };
 }
 
 function findPropConfig(propName, config) {
-    return config.props.find(prop=>{
-        return propName.match(new RegExp(prop.name))
-    });
+    return config.props.find(prop=>propName.match(new RegExp(prop.namePattern)));
 }
 
-function log(object, config) {
+function methodLogger(object, config = DEFAULT_CONFIG) {
     let props = Object.getOwnPropertyNames(object);
 
     if (config.includeProto) {
@@ -38,13 +31,16 @@ function log(object, config) {
 
     for (let i = 0; i < props.length; i++) {
         let propName = props[i];
+
+        if (typeof object[propName] !== 'function') continue;
+
         let propConfig = findPropConfig(props[i], config);
         if (!propConfig) continue;
-        console.log(propName);
+
         object[propName] = new Proxy(object[propName], buildHandler(propConfig));
     }
 
     return object;
 }
 
-module.exports = log;
+module.exports = methodLogger;
