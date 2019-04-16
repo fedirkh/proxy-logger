@@ -1,7 +1,7 @@
 # pattern-proxy
     Pattern based logger for object/class methods
 
-You can simply trace what passed in object/class functions.
+You can simply trace which function is called and what is passed.
 
 With this you can easy add logs for all object/class methods.
 
@@ -13,13 +13,15 @@ For now every method can have only one logger.
 
 ### Simplest case
 
-By default wraps all methods.
+By default wraps all methods in object.
 
 ```js
 const logify = require('method-logger')
 
 testObj = logify(testObj);
 ```
+
+
 
 ### General objects
 
@@ -53,7 +55,7 @@ testObj.fn3()           // stdout >> [Function: fn3] []
 
 In case of classes you need to add `includeProto: true` in config object
 
-```
+```js
 const logify = require('method-logger')
 
 class TestClass {
