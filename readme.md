@@ -1,4 +1,4 @@
-# pattern-proxy
+# method-logger
     Pattern based logger for object/class methods
 
 You can simply trace which function is called and what is passed.
