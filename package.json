@@ -13,7 +13,11 @@
   "homepage": "https://github.com/superiority/proxy-logger",
   "keywords": [
     "proxy",
-    "logger"
+    "method",
+    "object",
+    "logger",
+    "log",
+    "aop"
   ],
   "author": {
     "name": "Fyodor",
