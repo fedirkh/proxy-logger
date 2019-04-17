@@ -13,14 +13,13 @@ For now every method can have only one logger.
 
 ### Simplest case
 
-By default wraps all methods in object.
+By default wraps all methods in object or class.
 
 ```js
 const logify = require('method-logger')
 
 testObj = logify(testObj);
 ```
-
 
 
 ### General objects
@@ -39,9 +38,9 @@ let testObj = {
 
 let proxyLoggerConfig = {
     props: [{
-        namePattern: 'fn.*',
-        logger: (target, thisArg, argumentsList) => {console.log(target, argumentsList) }
-    }]
+        namePattern: 'fn.*'
+    }],
+    logger: (target, thisArg, argumentsList) => {console.log(target, argumentsList) }
 };
 
 testObj = logify(testObj, proxyLoggerConfig);
@@ -53,7 +52,8 @@ testObj.fn3()           // stdout >> [Function: fn3] []
 
 ### Classes
 
-In case of classes you need to add `includeProto: true` in config object
+Module tries to recognise is this class or object by comparing constructor to string `[Function: Object]`.
+This should work in most cases, but you can specify that it is class by manually passing `includeProto: true` in config object
 
 ```js
 const logify = require('method-logger')
@@ -67,8 +67,8 @@ class TestClass {
 let proxyLoggerConfig = {
     props: [{
         namePattern: 'fn.*',
-        logger: (target, thisArg, argumentsList) => {console.log(target, argumentsList) }
     }],
+    logger: (target, thisArg, argumentsList) => {console.log(target, argumentsList) },
     includeProto: true
 };
 
@@ -79,22 +79,11 @@ testObj.fn2(1, 2)       // stdout >> [Function: fn2] [ 1, 2 ]
 testObj.fn3()           // stdout >> [Function: fn3] []
 ```
 
-## Config examples
+### Different loggers for functions with similar names
 
-### Proxy for every method in class
-
-```js
-
-let config = {
-    props: [{
-        namePattern: '.*',
-        logger: (target, thisArg, argumentsList) => {console.log(target, argumentsList) }
-    }],
-    includeProto: true
-};
-```
-
-### Different proxy for functions with similar names
+In next case for `fn$` functions console.trace will be used,
+for `fn(3|2)` console.warn will be used,
+and in other cases default logger - console.log will be used
 
 ```js
 
@@ -102,12 +91,19 @@ let config = {
     props: [
         {
             namePattern: 'fn$',
-            logger: (target, thisArg, argumentsList) => {console.log(target, argumentsList) }
+            logger: (target, thisArg, argumentsList) => {console.trace(target, argumentsList) }
         },
         {
             namePattern: 'fn(3|2)',
             logger: (target, thisArg, argumentsList) => {console.warn(target, argumentsList) }
         }
-    ]
+        {
+            namePattern: 'customFunction',
+        },
+        {
+            namePattern: '.*',
+        },
+    ],
+    logger: (target, thisArg, argumentsList) => {console.log(target, argumentsList) }
 };
 ```

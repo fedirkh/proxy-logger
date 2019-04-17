@@ -2,14 +2,12 @@
 
 const DEFAULT_LOG_FN = console.log;
 const DEFAULT_CONFIG = {
-    props: [{
-        namePattern: ".*",
-        logger: (target, thisArg, argumentsList) => {DEFAULT_LOG_FN(target, argumentsList) }
-    }]
+    props: [{ namePattern: ".*" }],
+    logger: (target, thisArg, argumentsList) => {DEFAULT_LOG_FN(target, argumentsList) }
 };
 
-function buildHandler(config) {
-    let logger = config.logger || DEFAULT_LOG_FN;
+function buildHandler(propConfig, generalConfig) {
+    let logger = propConfig.logger || generalConfig.logger || DEFAULT_LOG_FN;
     return {
         apply: (target, ...args)=> {
             logger(target, ...args);
@@ -22,7 +20,21 @@ function findPropConfig(propName, config) {
     return config.props.find(prop=>propName.match(new RegExp(prop.namePattern)));
 }
 
-function methodLogger(object, config = DEFAULT_CONFIG) {
+function buildConfig(object, config) {
+    if (!config) config = {...DEFAULT_CONFIG};
+
+    if (config.includeProto === undefined && object.constructor !== '[Function: Object]') {
+        config.includeProto = true;
+    }
+
+    if (!config.props) config.props = DEFAULT_CONFIG.props;
+    if (!config.logger) config.logger = DEFAULT_CONFIG.logger;
+
+    return config;
+}
+
+function methodLogger(object, config) {
+    config = buildConfig(object, config);
     let props = Object.getOwnPropertyNames(object);
 
     if (config.includeProto) {
@@ -37,7 +49,7 @@ function methodLogger(object, config = DEFAULT_CONFIG) {
         let propConfig = findPropConfig(props[i], config);
         if (!propConfig) continue;
 
-        object[propName] = new Proxy(object[propName], buildHandler(propConfig));
+        object[propName] = new Proxy(object[propName], buildHandler(propConfig, config));
     }
 
     return object;
