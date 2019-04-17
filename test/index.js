@@ -93,7 +93,7 @@ describe('logify', function () {
         console.log('3---------------------------\n')
     });
 
-    it('should log class functions call with almost no config', function () {
+    it('should log class functions call with only logger passed', function () {
         class TestClass {
             fn (a) { return a }
             fn2 (a, b) { return a + b }
@@ -111,6 +111,26 @@ describe('logify', function () {
             e.message.should.be.equal('error name');
         }
         console.log('4---------------------------\n')
+    });
+
+    it('should log class functions call with includeProto passed', function () {
+        class TestClass {
+            fn (a) { return a }
+            fn2 (a, b) { return a + b }
+            fn3 (a, b) { throw new Error('error name') }
+        }
+
+        let testObj = logify(new TestClass(), {includeProto: true});
+
+        testObj.fn(1).should.be.equal(1);
+        testObj.fn2(1, 2).should.be.equal(3);
+        try {
+            testObj.fn3();
+            throw new Error('Fn3 should throw custom error');
+        } catch (e) {
+            e.message.should.be.equal('error name');
+        }
+        console.log('5---------------------------\n')
     });
 
 
@@ -144,6 +164,6 @@ describe('logify', function () {
         } catch (e) {
             e.message.should.be.equal('error name');
         }
-        console.log('5---------------------------\n')
+        console.log('6---------------------------\n')
     });
 });
